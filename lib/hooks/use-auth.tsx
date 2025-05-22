@@ -53,23 +53,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     setIsLoading(true)
     setError(null)
+    console.log("[useAuth Login] Initiating login process", { email })
 
     try {
+      console.log("[useAuth Login] About to call signInUser", { email })
       const userCredential = await signInUser(email, password)
+      console.log("[useAuth Login] userCredential received", { userCredential })
+
+      console.log("[useAuth Login] About to call getUserData", { user: userCredential.user })
       const userData = await getUserData(userCredential.user)
+      console.log("[useAuth Login] userData received", { userData })
       setUserData(userData)
 
+      const userRole = userData?.role
+      console.log("[useAuth Login] userData.role", { userRole })
+
+      console.log("[useAuth Login] Attempting redirection. UserData:", userData);
+      if (!userData || !userData.role) {
+        console.warn("[useAuth Login] UserData or role is missing. Cannot determine redirect path. UserData:", userData);
+        // Proceeding will likely default to admin dashboard or error out,
+        // but the warning is now logged. The finally block will ensure isLoading is false.
+      }
+
       // Redirect based on user role
-      if (userData?.role === "client") {
-        router.push("/client/dashboard")
+      if (userRole === "client") {
+        const path = "/client/dashboard"
+        console.log("[useAuth Login] About to redirect to", { path })
+        router.push(path)
       } else {
-        router.push("/admin/dashboard")
+        const path = "/admin/dashboard"
+        console.log("[useAuth Login] About to redirect to", { path })
+        router.push(path)
       }
     } catch (error: any) {
-      console.error("Login error:", error)
+      console.error("[useAuth Login] Login failed:", { message: error.message, code: error.code, name: error.name, stack: error.stack });
+      // The previous log for comprehensive details is good, but this one is more specific to "Login failed"
+      // and matches the new requirement format.
+      console.log("[useAuth Login] Comprehensive error details (retained for verbosity):", {
+        message: error.message,
+        stack: error.stack,
+        code: error.code,
+        name: error.name,
+      })
       setError(error.message || "Failed to login")
       throw error
     } finally {
+      console.log("[useAuth Login] Executing finally block. isLoading before set to false:", isLoading);
       setIsLoading(false)
     }
   }

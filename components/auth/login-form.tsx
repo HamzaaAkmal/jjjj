@@ -34,8 +34,10 @@ export function LoginForm({ userType = "admin" }: { userType?: "admin" | "client
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log("[LoginForm handleSubmit] Function called")
 
     try {
+      console.log("[LoginForm handleSubmit] Before login call", { isLoading })
       await login(formData.email, formData.password)
 
       toast({
@@ -43,9 +45,11 @@ export function LoginForm({ userType = "admin" }: { userType?: "admin" | "client
         description: "Welcome back!",
       })
     } catch (error) {
-      console.error("Login error:", error)
+      console.error("[LoginForm handleSubmit] Login error:", error)
+      console.log("[LoginForm handleSubmit] Error caught", { isLoading, error })
       // Error is handled by the useAuth hook
     }
+    console.log("[LoginForm handleSubmit] Function completed", { isLoading })
   }
 
   return (
